@@ -31,7 +31,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [carrinho, setCarrinho] = useState<ItemPedido[]>([]);
 
   const carregarDados = async () => {
-    console.log(user)
     if (!user?.tag) return;
     try {
       const [mesasData, produtosData, pedidosData] = await Promise.all([
@@ -54,8 +53,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const atualizarMesa = async (mesa: Mesa) => {
-    await dataService.atualizarMesa(mesa);
-    setMesas(prev => prev.map(m => m.id === mesa.id ? mesa : m));
+    console.log(mesa)
+    try{
+      await Api.put(`/tables/update/${mesa.id}`, {
+        status: mesa.status,
+      });
+    }catch(error){
+      console.error('Erro ao atualizar mesa:', error);
+    }
+    carregarDados();
   };
 
   const selecionarMesa = (mesaId: number) => {
@@ -80,7 +86,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const removerDoCarrinho = (produtoId: number) => {
-    // setCarrinho(prev => prev.filter(item => item.produto.id !== produtoId));
+     setCarrinho(prev => prev.filter(item => item.produto.id !== produtoId.toString()));
   };
 
   const limparCarrinho = () => {

@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   listContainer: {
-    padding: Spacing.sm
+    padding: Spacing.xl
   },
   modalOverlay: {
     flex: 1,

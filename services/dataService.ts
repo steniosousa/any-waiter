@@ -37,15 +37,6 @@ export const dataService = {
     }
   },
 
-  async atualizarMesa(mesa: Mesa): Promise<void> {
-    const mesas = await this.getMesas();
-    const index = mesas.findIndex(m => m.id === mesa.id);
-    if (index !== -1) {
-      mesas[index] = mesa;
-      await this.salvarMesas(mesas);
-    }
-  },
-
   // Pedidos
   async getPedidos(): Promise<Pedido[]> {
     try {
