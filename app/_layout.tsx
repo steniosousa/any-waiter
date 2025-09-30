@@ -38,7 +38,6 @@ function AuthLayout() {
         }}
       />
       <Stack.Screen
-        name="login"
         options={{
           headerShown: true,
           title: 'Login',

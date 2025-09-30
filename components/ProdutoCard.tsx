@@ -10,6 +10,7 @@ interface ProdutoCardProps {
 }
 
 export const ProdutoCard = React.memo<ProdutoCardProps>(({ produto, onPress }) => {
+
   return (
     <TouchableOpacity
       style={[styles.container, !produto.enabled && styles.indisponivel]}
@@ -26,6 +27,8 @@ export const ProdutoCard = React.memo<ProdutoCardProps>(({ produto, onPress }) =
             R$ {produto.price.toFixed(2).replace('.', ',')}
           </Text>
         </View>
+
+     
         
         {produto.description && (
           <Text style={styles.descricao} numberOfLines={2}>
@@ -111,5 +114,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginLeft: 2,
     fontWeight: '500'
-  }
+  },
+ 
 });

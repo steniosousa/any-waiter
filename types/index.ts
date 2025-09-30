@@ -6,20 +6,20 @@ export interface Mesa {
   garcom?: string;
 }
 
-interface ProductOption {
-  id?: string;
+export interface ProductOption {
+  id: string;
   name: string;
   price: number | string;
   multiple: boolean;
 }
 
-interface ProductOptionGroup {
+export interface ProductOptionGroup {
   id?: string;
   name: string;
   required: boolean;
   minSelections: number;
   maxSelections?: number;
-  options: ProductOption[];
+  options?: ProductOption[];
 }
 
 export interface Produto {

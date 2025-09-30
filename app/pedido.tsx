@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
   TouchableOpacity,
   TextInput,
   Modal,
   Alert,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  ScrollView
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,19 +23,19 @@ import { Colors, Spacing } from '../constants/Colors';
 export default function PedidoScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ produtoId?: string }>();
-  const { 
-    produtos, 
-    carrinho, 
-    carrinhoMesa, 
+  const {
+    produtos,
+    carrinho,
+    carrinhoMesa,
     mesas,
-    adicionarAoCarrinho, 
-    removerDoCarrinho,
+    adicionarAoCarrinho,
     finalizarPedido,
     limparCarrinho
   } = useApp();
 
   const [modalProduto, setModalProduto] = useState<Produto | null>(null);
   const [quantidade, setQuantidade] = useState(1);
+  const [opcoesSelecionadas, setOpcoesSelecionadas] = useState<{ [key: string]: string }>({});
   const [observacoes, setObservacoes] = useState('');
   const [alertConfig, setAlertConfig] = useState<{
     visible: boolean;
@@ -94,7 +95,7 @@ export default function PedidoScreen() {
 
   const handleAdicionarProduto = () => {
     if (!modalProduto) return;
-    
+
     adicionarAoCarrinho(modalProduto, quantidade, observacoes);
     setModalProduto(null);
     setQuantidade(1);
@@ -110,7 +111,7 @@ export default function PedidoScreen() {
 
     await finalizarPedido();
     showAlert(
-      'Pedido enviado!', 
+      'Pedido enviado!',
       `Pedido para Mesa ${mesa.number} foi enviado para a cozinha`,
       () => router.back()
     );
@@ -133,10 +134,12 @@ export default function PedidoScreen() {
         'Deseja realmente remover todos os itens?',
         [
           { text: 'Cancelar', style: 'cancel' },
-          { text: 'Limpar', style: 'destructive', onPress: () => {
-            limparCarrinho();
-            router.back();
-          }}
+          {
+            text: 'Limpar', style: 'destructive', onPress: () => {
+              limparCarrinho();
+              router.back();
+            }
+          }
         ]
       );
     }
@@ -172,7 +175,7 @@ export default function PedidoScreen() {
   );
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
@@ -198,7 +201,7 @@ export default function PedidoScreen() {
             style={styles.carrinhoList}
             showsVerticalScrollIndicator={false}
           />
-          
+
           <View style={styles.totalContainer}>
             <Text style={styles.totalText}>
               Total: R$ {totalCarrinho.toFixed(2).replace('.', ',')}
@@ -248,9 +251,46 @@ export default function PedidoScreen() {
               <Text style={styles.modalPreco}>
                 R$ {modalProduto?.price.toFixed(2).replace('.', ',')}
               </Text>
-              
+
               {modalProduto?.description && (
                 <Text style={styles.modalDescricao}>{modalProduto.description}</Text>
+              )}
+              {modalProduto?.optionGroups && (
+                <ScrollView style={styles.modalOpcoes}>
+                  {modalProduto.optionGroups.map((optionGroup) => (
+                    <View key={optionGroup.id} style={styles.modalOpcaoGroup}>
+                      <Text style={styles.modalOpcaoTitulo}>{optionGroup.name.toUpperCase() + " /  MIN " + optionGroup.minSelections + " MAX " + optionGroup.maxSelections}</Text>
+                      <View style={styles.modalOpcaoContainer}>
+                        {optionGroup.options && optionGroup.options?.map((option) => (
+                          <TouchableOpacity
+                            key={option.id}
+                            style={[
+                              styles.modalOpcao,
+                              opcoesSelecionadas && option.id in opcoesSelecionadas ? styles.modalOpcaoSelecionada : null
+                            ]}
+                            onPress={() => {
+                              if (opcoesSelecionadas && option.id in opcoesSelecionadas) {
+                                const newSelections = { ...opcoesSelecionadas };
+                                delete newSelections[option.id];
+                                setOpcoesSelecionadas(newSelections);
+                              } else {
+                                setOpcoesSelecionadas({
+                                  ...(opcoesSelecionadas || {}),
+                                  [String(option.id)]: String(option.name)
+                                });
+                              }
+                            }}
+                          >
+                            <Text style={styles.modalOpcaoTexto}>{String(option.name.toUpperCase())}</Text>
+                            <Text style={styles.modalOpcaoPreco}>
+                              R$ {String(option.price)}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
               )}
 
               <View style={styles.quantidadeContainer}>
@@ -302,13 +342,13 @@ export default function PedidoScreen() {
               <Text style={styles.alertTitle}>{alertConfig.title}</Text>
               <Text style={styles.alertMessage}>{alertConfig.message}</Text>
               <View style={styles.alertButtons}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.alertButton, styles.alertButtonCancel]}
                   onPress={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
                 >
                   <Text style={styles.alertButtonTextCancel}>Cancelar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.alertButton, styles.alertButtonConfirm]}
                   onPress={() => {
                     alertConfig.onOk?.();
@@ -619,5 +659,45 @@ const styles = StyleSheet.create({
   alertButtonTextCancel: {
     color: Colors.textSecondary,
     fontWeight: 'bold'
+  },
+  modalOpcoes: {
+    width: '100%'
+  },
+  modalOpcaoTitulo: {
+    fontSize: 18,
+    marginBottom: Spacing.md
+  },
+  modalOpcaoGroup: {
+
+  },
+  modalOpcaoContainer: {
+    flexDirection: 'column',
+    marginBottom: Spacing.md,
+  },
+  modalOpcao: {
+    backgroundColor: "#F5F5F5",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 5,
+    paddingHorizontal: Spacing.xs,
+    paddingVertical: 8,
+    marginRight: Spacing.xs,
+    marginBottom: Spacing.xs
+  },
+  modalOpcaoSelecionada: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+    borderWidth: 1
+  },
+  modalOpcaoTexto: {
+    color: Colors.text,
+    fontSize: 12,
+    fontWeight: '500'
+  },
+  modalOpcaoPreco: {
+    color: Colors.text,
+    fontSize: 12,
+    fontWeight: '500'
   }
 });
