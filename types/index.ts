@@ -1,18 +1,40 @@
 export interface Mesa {
   id: number;
-  numero: number;
-  status: 'livre' | 'ocupada' | 'reservada' | 'conta';
+  number: number;
+  status: 'LIVRE' | 'OCUPADA' | 'RESERVADA' | 'CONTA';
   pessoas?: number;
   garcom?: string;
 }
 
+interface ProductOption {
+  id?: string;
+  name: string;
+  price: number | string;
+  multiple: boolean;
+}
+
+interface ProductOptionGroup {
+  id?: string;
+  name: string;
+  required: boolean;
+  minSelections: number;
+  maxSelections?: number;
+  options: ProductOption[];
+}
+
 export interface Produto {
-  id: number;
-  nome: string;
-  preco: number;
-  categoria: string;
-  descricao?: string;
-  disponivel: boolean;
+  id: string;
+  name: string;
+  description: string;
+  category: {
+    id: string;
+    name: string;
+  };
+  price: number;
+  enabled: boolean;
+  image_url?: string;
+  file_image: File;
+  optionGroups?: ProductOptionGroup[];
 }
 
 export interface ItemPedido {
@@ -27,6 +49,6 @@ export interface Pedido {
   numeroMesa: number;
   itens: ItemPedido[];
   total: number;
-  status: 'preparando' | 'pronto' | 'entregue' | 'pago';
+  status: 'PREPARANDO' | 'PRONTO' | 'ENTREGUE' | 'PAGO';
   horario: Date;
 }

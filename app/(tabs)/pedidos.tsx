@@ -27,10 +27,10 @@ export default function PedidosScreen() {
     return pedidos
       .filter(p => {
         switch (filtroStatus.toLowerCase()) {
-          case 'preparando': return p.status === 'preparando';
-          case 'pronto': return p.status === 'pronto';
-          case 'entregue': return p.status === 'entregue';
-          case 'pago': return p.status === 'pago';
+          case 'preparando': return p.status === 'PREPARANDO';
+          case 'pronto': return p.status === 'PRONTO';
+          case 'entregue': return p.status === 'ENTREGUE';
+          case 'pago': return p.status === 'PAGO';
           default: return true;
         }
       })
@@ -39,10 +39,10 @@ export default function PedidosScreen() {
 
   const estatisticas = useMemo(() => {
     return {
-      preparando: pedidos.filter(p => p.status === 'preparando').length,
-      pronto: pedidos.filter(p => p.status === 'pronto').length,
-      entregue: pedidos.filter(p => p.status === 'entregue').length,
-      pago: pedidos.filter(p => p.status === 'pago').length
+      preparando: pedidos.filter(p => p.status === 'PREPARANDO').length,
+      pronto: pedidos.filter(p => p.status === 'PRONTO').length,
+      entregue: pedidos.filter(p => p.status === 'ENTREGUE').length,
+      pago: pedidos.filter(p => p.status === 'PAGO').length
     };
   }, [pedidos]);
 

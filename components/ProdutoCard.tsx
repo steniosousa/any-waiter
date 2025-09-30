@@ -12,30 +12,30 @@ interface ProdutoCardProps {
 export const ProdutoCard = React.memo<ProdutoCardProps>(({ produto, onPress }) => {
   return (
     <TouchableOpacity
-      style={[styles.container, !produto.disponivel && styles.indisponivel]}
-      onPress={() => produto.disponivel && onPress(produto)}
+      style={[styles.container, !produto.enabled && styles.indisponivel]}
+      onPress={() => produto.enabled && onPress(produto)}
       activeOpacity={0.7}
-      disabled={!produto.disponivel}
+      disabled={!produto.enabled}
     >
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.nome} numberOfLines={2}>
-            {produto.nome}
+            {produto.name}
           </Text>
           <Text style={styles.preco}>
-            R$ {produto.preco.toFixed(2).replace('.', ',')}
+            R$ {produto.price.toFixed(2).replace('.', ',')}
           </Text>
         </View>
         
-        {produto.descricao && (
+        {produto.description && (
           <Text style={styles.descricao} numberOfLines={2}>
-            {produto.descricao}
+            {produto.description}
           </Text>
         )}
         
         <View style={styles.footer}>
-          <Text style={styles.categoria}>{produto.categoria}</Text>
-          {!produto.disponivel && (
+          <Text style={styles.categoria}>{produto.category.name}</Text>
+          {!produto.enabled && (
             <View style={styles.indisponivelBadge}>
               <MaterialIcons name="close" size={12} color="white" />
               <Text style={styles.indisponivelText}>Indisponível</Text>

@@ -48,7 +48,7 @@ export default function PedidoScreen() {
   }, [mesas, carrinhoMesa]);
 
   const totalCarrinho = useMemo(() => {
-    return carrinho.reduce((sum, item) => sum + (item.produto.preco * item.quantidade), 0);
+    return carrinho.reduce((sum, item) => sum + (item.produto.price * item.quantidade), 0);
   }, [carrinho]);
 
   const showAlert = (title: string, message: string, onOk?: () => void) => {
@@ -61,8 +61,8 @@ export default function PedidoScreen() {
 
   useEffect(() => {
     if (params.produtoId) {
-      const produto = produtos.find(p => p.id === parseInt(params.produtoId!));
-      if (produto && produto.disponivel) {
+      const produto = produtos.find(p => p.id === params.produtoId);
+      if (produto && produto.enabled) {
         setModalProduto(produto);
       }
     }
@@ -99,7 +99,7 @@ export default function PedidoScreen() {
     setModalProduto(null);
     setQuantidade(1);
     setObservacoes('');
-    showAlert('Produto adicionado', `${modalProduto.nome} foi adicionado ao pedido`);
+    showAlert('Produto adicionado', `${modalProduto.name} foi adicionado ao pedido`);
   };
 
   const handleFinalizarPedido = async () => {
@@ -111,7 +111,7 @@ export default function PedidoScreen() {
     await finalizarPedido();
     showAlert(
       'Pedido enviado!', 
-      `Pedido para Mesa ${mesa.numero} foi enviado para a cozinha`,
+      `Pedido para Mesa ${mesa.number} foi enviado para a cozinha`,
       () => router.back()
     );
   };
@@ -149,9 +149,9 @@ export default function PedidoScreen() {
   const renderItemCarrinho = ({ item }: { item: ItemPedido }) => (
     <View style={styles.itemCarrinho}>
       <View style={styles.itemInfo}>
-        <Text style={styles.itemNome}>{item.produto.nome}</Text>
+        <Text style={styles.itemNome}>{item.produto.name}</Text>
         <Text style={styles.itemDetalhes}>
-          {item.quantidade}x R$ {item.produto.preco.toFixed(2).replace('.', ',')}
+          {item.quantidade}x R$ {item.produto.price.toFixed(2).replace('.', ',')}
         </Text>
         {item.observacoes && (
           <Text style={styles.itemObservacoes}>Obs: {item.observacoes}</Text>
@@ -159,14 +159,14 @@ export default function PedidoScreen() {
       </View>
       <View style={styles.itemPrecoContainer}>
         <Text style={styles.itemPreco}>
-          R$ {(item.produto.preco * item.quantidade).toFixed(2).replace('.', ',')}
+          R$ {(item.produto.price * item.quantidade).toFixed(2).replace('.', ',')}
         </Text>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => removerDoCarrinho(item.produto.id)}
           style={styles.removerButton}
         >
           <MaterialIcons name="delete" size={20} color={Colors.error} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );
@@ -179,7 +179,7 @@ export default function PedidoScreen() {
       <View style={styles.header}>
         <View style={styles.mesaInfo}>
           <MaterialIcons name="table-restaurant" size={24} color={Colors.primary} />
-          <Text style={styles.mesaTitulo}>Mesa {mesa.numero}</Text>
+          <Text style={styles.mesaTitulo}>Mesa {mesa.number}</Text>
         </View>
         {carrinho.length > 0 && (
           <TouchableOpacity onPress={handleLimparCarrinho}>
@@ -235,7 +235,7 @@ export default function PedidoScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContainer, { paddingBottom: insets.bottom }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitulo}>{modalProduto?.nome}</Text>
+              <Text style={styles.modalTitulo}>{modalProduto?.name}</Text>
               <TouchableOpacity
                 onPress={() => setModalProduto(null)}
                 style={styles.modalCloseButton}
@@ -246,11 +246,11 @@ export default function PedidoScreen() {
 
             <View style={styles.modalContent}>
               <Text style={styles.modalPreco}>
-                R$ {modalProduto?.preco.toFixed(2).replace('.', ',')}
+                R$ {modalProduto?.price.toFixed(2).replace('.', ',')}
               </Text>
               
-              {modalProduto?.descricao && (
-                <Text style={styles.modalDescricao}>{modalProduto.descricao}</Text>
+              {modalProduto?.description && (
+                <Text style={styles.modalDescricao}>{modalProduto.description}</Text>
               )}
 
               <View style={styles.quantidadeContainer}>
@@ -287,7 +287,7 @@ export default function PedidoScreen() {
                 onPress={handleAdicionarProduto}
               >
                 <Text style={styles.adicionarButtonText}>
-                  Adicionar - R$ {modalProduto ? (modalProduto.preco * quantidade).toFixed(2).replace('.', ',') : '0,00'}
+                  Adicionar - R$ {modalProduto ? (modalProduto.price * quantidade).toFixed(2).replace('.', ',') : '0,00'}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -1,6 +1,8 @@
 import React, { createContext, ReactNode, useState, useEffect } from 'react';
 import { Mesa, Produto, Pedido, ItemPedido } from '../types';
 import { dataService } from '../services/dataService';
+import Api from '@/services/Api';
+import { useAuth } from './AuthContext';
 
 interface AppContextType {
   mesas: Mesa[];
@@ -8,7 +10,6 @@ interface AppContextType {
   pedidos: Pedido[];
   carrinhoMesa: number | null;
   carrinho: ItemPedido[];
-  
   atualizarMesa: (mesa: Mesa) => Promise<void>;
   selecionarMesa: (mesaId: number) => void;
   adicionarAoCarrinho: (produto: Produto, quantidade: number, observacoes?: string) => void;
@@ -22,6 +23,7 @@ interface AppContextType {
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
@@ -29,24 +31,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [carrinho, setCarrinho] = useState<ItemPedido[]>([]);
 
   const carregarDados = async () => {
+    console.log(user)
+    if (!user?.tag) return;
     try {
       const [mesasData, produtosData, pedidosData] = await Promise.all([
-        dataService.getMesas(),
-        dataService.getProdutos(),
+        Api.get('/tables/list'),
+        Api.get("/products/list", {
+          params: {
+            tag: user?.tag,
+            page: 1,
+            limit: 10
+          }
+        }),
         dataService.getPedidos()
       ]);
-      
-      setMesas(mesasData);
-      setProdutos(produtosData);
+      setMesas(mesasData.data);
+      setProdutos(produtosData.data.products);
       setPedidos(pedidosData);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     }
   };
-
-  useEffect(() => {
-    carregarDados();
-  }, []);
 
   const atualizarMesa = async (mesa: Mesa) => {
     await dataService.atualizarMesa(mesa);
@@ -61,7 +66,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const adicionarAoCarrinho = (produto: Produto, quantidade: number, observacoes?: string) => {
     setCarrinho(prev => {
       const itemExistente = prev.find(item => item.produto.id === produto.id);
-      
+
       if (itemExistente) {
         return prev.map(item =>
           item.produto.id === produto.id
@@ -75,7 +80,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const removerDoCarrinho = (produtoId: number) => {
-    setCarrinho(prev => prev.filter(item => item.produto.id !== produtoId));
+    // setCarrinho(prev => prev.filter(item => item.produto.id !== produtoId));
   };
 
   const limparCarrinho = () => {
@@ -89,15 +94,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const mesa = mesas.find(m => m.id === carrinhoMesa);
     if (!mesa) return;
 
-    const total = carrinho.reduce((sum, item) => sum + (item.produto.preco * item.quantidade), 0);
-    
+    const total = carrinho.reduce((sum, item) => sum + (item.produto.price * item.quantidade), 0);
+
     const novoPedido: Pedido = {
       id: Date.now().toString(),
       mesaId: carrinhoMesa,
-      numeroMesa: mesa.numero,
+      numeroMesa: mesa.number,
       itens: [...carrinho],
       total,
-      status: 'preparando',
+      status: 'PREPARANDO',
       horario: new Date()
     };
 
@@ -105,8 +110,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPedidos(prev => [...prev, novoPedido]);
 
     // Atualizar status da mesa para ocupada
-    if (mesa.status === 'livre') {
-      const mesaAtualizada = { ...mesa, status: 'ocupada' as const };
+    if (mesa.status === 'LIVRE') {
+      const mesaAtualizada = { ...mesa, status: 'OCUPADA' as const };
       await atualizarMesa(mesaAtualizada);
     }
 
@@ -121,6 +126,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await dataService.atualizarPedido(novoStatusPedido);
     setPedidos(prev => prev.map(p => p.id === pedidoId ? novoStatusPedido : p));
   };
+
+  useEffect(() => {
+    carregarDados();
+  }, []);
+
 
   return (
     <AppContext.Provider value={{

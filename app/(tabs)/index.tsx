@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  StyleSheet, 
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
   TouchableOpacity,
   Modal,
   Alert,
@@ -16,10 +16,12 @@ import { useApp } from '../../hooks/useApp';
 import { Mesa } from '../../types';
 import { Colors, Spacing } from '../../constants/Colors';
 import { router } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function MesasScreen() {
   const insets = useSafeAreaInsets();
-  const { mesas, atualizarMesa, selecionarMesa } = useApp();
+  const { signOut,user } = useAuth();
+  const { mesas, atualizarMesa, selecionarMesa,carregarDados } = useApp();
   const [mesaSelecionada, setMesaSelecionada] = useState<Mesa | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{
@@ -39,10 +41,10 @@ export default function MesasScreen() {
 
   const estatisticas = useMemo(() => {
     return {
-      livres: mesas.filter(m => m.status === 'livre').length,
-      ocupadas: mesas.filter(m => m.status === 'ocupada').length,
-      reservadas: mesas.filter(m => m.status === 'reservada').length,
-      contas: mesas.filter(m => m.status === 'conta').length
+      livres: mesas.filter(m => m.status === 'LIVRE').length,
+      ocupadas: mesas.filter(m => m.status === 'OCUPADA').length,
+      reservadas: mesas.filter(m => m.status === 'RESERVADA').length,
+      contas: mesas.filter(m => m.status === 'CONTA').length
     };
   }, [mesas]);
 
@@ -55,28 +57,28 @@ export default function MesasScreen() {
     if (!mesaSelecionada) return;
 
     let novoStatus: Mesa['status'] = mesaSelecionada.status;
-    
+
     switch (acao) {
       case 'ocupar':
-        if (mesaSelecionada.status === 'livre') {
-          novoStatus = 'ocupada';
+        if (mesaSelecionada.status === 'LIVRE') {
+          novoStatus = 'OCUPADA';
         }
         break;
       case 'liberar':
-        novoStatus = 'livre';
+        novoStatus = 'LIVRE';
         break;
       case 'reservar':
-        if (mesaSelecionada.status === 'livre') {
-          novoStatus = 'reservada';
+        if (mesaSelecionada.status === 'LIVRE') {
+          novoStatus = 'RESERVADA';
         }
         break;
       case 'conta':
-        if (mesaSelecionada.status === 'ocupada') {
-          novoStatus = 'conta';
+        if (mesaSelecionada.status === 'OCUPADA') {
+          novoStatus = 'CONTA';
         }
         break;
       case 'pedido':
-        if (mesaSelecionada.status === 'livre' || mesaSelecionada.status === 'ocupada') {
+        if (mesaSelecionada.status === 'LIVRE' || mesaSelecionada.status === 'OCUPADA') {
           selecionarMesa(mesaSelecionada.id);
           setModalVisible(false);
           router.push('/pedido');
@@ -88,7 +90,7 @@ export default function MesasScreen() {
     if (novoStatus !== mesaSelecionada.status) {
       const mesaAtualizada = { ...mesaSelecionada, status: novoStatus };
       await atualizarMesa(mesaAtualizada);
-      showAlert('Sucesso', `Mesa ${mesaSelecionada.numero} atualizada para: ${novoStatus}`);
+      showAlert('Sucesso', `Mesa ${mesaSelecionada.number} atualizada para: ${novoStatus}`);
     }
 
     setModalVisible(false);
@@ -102,25 +104,25 @@ export default function MesasScreen() {
     if (!mesaSelecionada) return null;
 
     const acoes = [];
-    
-    if (mesaSelecionada.status === 'livre') {
+
+    if (mesaSelecionada.status === 'LIVRE') {
       acoes.push(
         { id: 'ocupar', titulo: 'Ocupar Mesa', icone: 'people', cor: Colors.error },
         { id: 'reservar', titulo: 'Reservar Mesa', icone: 'event-busy', cor: Colors.warning },
         { id: 'pedido', titulo: 'Fazer Pedido', icone: 'add-shopping-cart', cor: Colors.primary }
       );
-    } else if (mesaSelecionada.status === 'ocupada') {
+    } else if (mesaSelecionada.status === 'OCUPADA') {
       acoes.push(
         { id: 'pedido', titulo: 'Fazer Pedido', icone: 'add-shopping-cart', cor: Colors.primary },
         { id: 'conta', titulo: 'Pedir Conta', icone: 'receipt', cor: Colors.secondary },
         { id: 'liberar', titulo: 'Liberar Mesa', icone: 'event-available', cor: Colors.success }
       );
-    } else if (mesaSelecionada.status === 'reservada') {
+    } else if (mesaSelecionada.status === 'RESERVADA') {
       acoes.push(
         { id: 'ocupar', titulo: 'Ocupar Mesa', icone: 'people', cor: Colors.error },
         { id: 'liberar', titulo: 'Liberar Mesa', icone: 'event-available', cor: Colors.success }
       );
-    } else if (mesaSelecionada.status === 'conta') {
+    } else if (mesaSelecionada.status === 'CONTA') {
       acoes.push(
         { id: 'liberar', titulo: 'Liberar Mesa', icone: 'event-available', cor: Colors.success }
       );
@@ -138,11 +140,24 @@ export default function MesasScreen() {
     ));
   };
 
+  useEffect(() => {
+    console.log('kjdlsk')
+    carregarDados();
+  }, []);
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.titulo}>Controle de Mesas</Text>
-        
+        <View style={styles.headerContent}>
+          <Text style={styles.titulo}>Controle de Mesas</Text>
+          <TouchableOpacity onPress={() => console.log(user)}>
+            <MaterialIcons name="restaurant" size={24} color={Colors.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => signOut()}>
+            <MaterialIcons name="exit-to-app" size={24} color={Colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.estatisticas}>
           <View style={styles.estatisticaItem}>
             <Text style={[styles.estatisticaNumero, { color: Colors.success }]}>
@@ -190,7 +205,7 @@ export default function MesasScreen() {
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitulo}>
-                Mesa {mesaSelecionada?.numero}
+                Mesa {mesaSelecionada?.number}
               </Text>
               <TouchableOpacity
                 onPress={() => setModalVisible(false)}
@@ -199,7 +214,7 @@ export default function MesasScreen() {
                 <MaterialIcons name="close" size={24} color={Colors.textSecondary} />
               </TouchableOpacity>
             </View>
-            
+
             <View style={styles.modalContent}>
               {renderModalAcoes()}
             </View>
@@ -213,7 +228,7 @@ export default function MesasScreen() {
             <View style={styles.alertContainer}>
               <Text style={styles.alertTitle}>{alertConfig.title}</Text>
               <Text style={styles.alertMessage}>{alertConfig.message}</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.alertButton}
                 onPress={() => {
                   alertConfig.onOk?.();
@@ -240,6 +255,11 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   titulo: {
     fontSize: 24,

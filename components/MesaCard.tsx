@@ -12,30 +12,30 @@ interface MesaCardProps {
 export const MesaCard = React.memo<MesaCardProps>(({ mesa, onPress }) => {
   const getStatusColor = () => {
     switch (mesa.status) {
-      case 'livre': return Colors.success;
-      case 'ocupada': return Colors.error;
-      case 'reservada': return Colors.warning;
-      case 'conta': return Colors.secondary;
+      case 'LIVRE': return Colors.success;
+      case 'OCUPADA': return Colors.error;
+      case 'RESERVADA': return Colors.warning;
+      case 'CONTA': return Colors.secondary;
       default: return Colors.border;
     }
   };
 
   const getStatusIcon = () => {
     switch (mesa.status) {
-      case 'livre': return 'event-available';
-      case 'ocupada': return 'people';
-      case 'reservada': return 'event-busy';
-      case 'conta': return 'receipt';
+      case 'LIVRE': return 'event-available';
+      case 'OCUPADA': return 'people';
+      case 'RESERVADA': return 'event-busy';
+      case 'CONTA': return 'receipt';
       default: return 'table-restaurant';
     }
   };
 
   const getStatusText = () => {
     switch (mesa.status) {
-      case 'livre': return 'Livre';
-      case 'ocupada': return 'Ocupada';
-      case 'reservada': return 'Reservada';
-      case 'conta': return 'Conta';
+      case 'LIVRE': return 'Livre';
+      case 'OCUPADA': return 'Ocupada';
+      case 'RESERVADA': return 'Reservada';
+      case 'CONTA': return 'Conta';
       default: return 'Mesa';
     }
   };
@@ -51,7 +51,7 @@ export const MesaCard = React.memo<MesaCardProps>(({ mesa, onPress }) => {
       </View>
       
       <View style={styles.content}>
-        <Text style={styles.mesaNumero}>Mesa {mesa.numero}</Text>
+        <Text style={styles.mesaNumero}>Mesa {mesa.number}</Text>
         <Text style={[styles.status, { color: getStatusColor() }]}>
           {getStatusText()}
         </Text>

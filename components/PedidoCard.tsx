@@ -12,29 +12,29 @@ interface PedidoCardProps {
 export const PedidoCard = React.memo<PedidoCardProps>(({ pedido, onUpdateStatus }) => {
   const getStatusColor = () => {
     switch (pedido.status) {
-      case 'preparando': return Colors.warning;
-      case 'pronto': return Colors.primary;
-      case 'entregue': return Colors.success;
-      case 'pago': return Colors.textSecondary;
+      case 'PREPARANDO': return Colors.warning;
+      case 'PRONTO': return Colors.primary;
+      case 'ENTREGUE': return Colors.success;
+      case 'PAGO': return Colors.textSecondary;
       default: return Colors.border;
     }
   };
 
   const getStatusText = () => {
     switch (pedido.status) {
-      case 'preparando': return 'Preparando';
-      case 'pronto': return 'Pronto';
-      case 'entregue': return 'Entregue';
-      case 'pago': return 'Pago';
+      case 'PREPARANDO': return 'Preparando';
+      case 'PRONTO': return 'Pronto';
+      case 'ENTREGUE': return 'Entregue';
+      case 'PAGO': return 'Pago';
       default: return 'Status';
     }
   };
 
   const getNextStatus = (): Pedido['status'] | null => {
     switch (pedido.status) {
-      case 'preparando': return 'pronto';
-      case 'pronto': return 'entregue';
-      case 'entregue': return 'pago';
+      case 'PREPARANDO': return 'PRONTO';
+      case 'PRONTO': return 'ENTREGUE';
+      case 'ENTREGUE': return 'PAGO';
       default: return null;
     }
   };
@@ -42,9 +42,9 @@ export const PedidoCard = React.memo<PedidoCardProps>(({ pedido, onUpdateStatus 
   const getNextStatusText = () => {
     const nextStatus = getNextStatus();
     switch (nextStatus) {
-      case 'pronto': return 'Marcar Pronto';
-      case 'entregue': return 'Marcar Entregue';
-      case 'pago': return 'Marcar Pago';
+      case 'PRONTO': return 'Marcar Pronto';
+      case 'ENTREGUE': return 'Marcar Entregue';
+      case 'PAGO': return 'Marcar Pago';
       default: return null;
     }
   };
@@ -78,9 +78,9 @@ export const PedidoCard = React.memo<PedidoCardProps>(({ pedido, onUpdateStatus 
           {pedido.itens.map((item, index) => (
             <View key={index} style={styles.item}>
               <Text style={styles.itemQuantidade}>{item.quantidade}x</Text>
-              <Text style={styles.itemNome}>{item.produto.nome}</Text>
+              <Text style={styles.itemNome}>{item.produto.name}</Text>
               <Text style={styles.itemPreco}>
-                R$ {(item.produto.preco * item.quantidade).toFixed(2).replace('.', ',')}
+                R$ {(item.produto.price * item.quantidade).toFixed(2).replace('.', ',')}
               </Text>
             </View>
           ))}

@@ -20,7 +20,7 @@ export default function CardapioScreen() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState<string>('Todas');
 
   const categorias = useMemo(() => {
-    const cats = ['Todas', ...new Set(produtos.map(p => p.categoria))];
+    const cats = ['Todas', ...new Set(produtos.map(p => p.category))];
     return cats;
   }, [produtos]);
 
@@ -28,11 +28,11 @@ export default function CardapioScreen() {
     if (categoriaSelecionada === 'Todas') {
       return produtos;
     }
-    return produtos.filter(p => p.categoria === categoriaSelecionada);
+    return produtos.filter(p => p.category.id === categoriaSelecionada);
   }, [produtos, categoriaSelecionada]);
 
   const totalCarrinho = useMemo(() => {
-    return carrinho.reduce((sum, item) => sum + (item.produto.preco * item.quantidade), 0);
+    return carrinho.reduce((sum, item) => sum + (item.produto.price * item.quantidade), 0);
   }, [carrinho]);
 
   const handleProdutoPress = (produto: Produto) => {
@@ -50,6 +50,7 @@ export default function CardapioScreen() {
   };
 
   const renderCategoria = (categoria: string) => (
+    console.log(categoria),
     <TouchableOpacity
       key={categoria}
       style={[
@@ -87,8 +88,8 @@ export default function CardapioScreen() {
       <View style={styles.categoriasContainer}>
         <FlatList
           data={categorias}
-          renderItem={({ item }) => renderCategoria(item)}
-          keyExtractor={(item) => item}
+          renderItem={({ item }) => renderCategoria(item.toString())}
+          keyExtractor={(item) => item.toString()}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriasList}

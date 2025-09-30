@@ -1,19 +1,32 @@
-import { StyleSheet, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { StyleSheet, KeyboardAvoidingView, Platform, ScrollView, View, Alert } from 'react-native';
 import { Text, TextInput, Button, useTheme, Surface } from 'react-native-paper';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginScreen() {
+    const { signIn } = useAuth();
     const theme = useTheme();
-    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     
-    const handleLogin = () => {
-        // TODO: Implement login logic
-        console.log('Login with:', { email, password });
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !password) {
+            Alert.alert('Erro', 'Por favor, preencha todos os campos');
+            return;
+        }
+        try {
+            setIsLoading(true);
+            await signIn(email, password);
+        } catch (error) {
+            Alert.alert('Erro', 'Não foi possível fazer login. Verifique suas credenciais.');
+        } finally {
+            setIsLoading(false);
+        }
     };
     
     return (
@@ -27,8 +40,8 @@ export default function LoginScreen() {
                     keyboardShouldPersistTaps="handled"
                 >
                 <Surface style={[styles.surface, { backgroundColor: theme.colors.surface }]}>
-                    <Text variant="headlineMedium" style={styles.title}>Bem-vindo de volta!</Text>
-                    <Text variant="bodyMedium" style={styles.subtitle}>Faça login para continuar</Text>
+                    <Image source={require('@/assets/images/logo.png')} style={styles.logo} />
+                    <Text variant="bodyMedium" style={styles.subtitle}>Faça login para começar seus pedidos</Text>
                     
                     <View style={styles.form}>
                         <TextInput
@@ -62,12 +75,13 @@ export default function LoginScreen() {
                         
                         <Button 
                             mode="contained" 
-                            onPress={handleLogin}
+                            onPress={(e:any) => handleLogin(e)}
                             style={styles.button}
                             labelStyle={styles.buttonLabel}
-                            disabled={!email || !password}
+                            disabled={isLoading}
+                            loading={isLoading}
                         >
-                            Entrar
+                            {isLoading ? 'Entrando...' : 'Entrar'}
                         </Button>
                     </View>
                 </Surface>
@@ -93,6 +107,7 @@ const styles = StyleSheet.create({
         padding: 20,
         borderRadius: 10,
         elevation: 4,
+        alignItems: 'center',
     },
     title: {
         textAlign: 'center',
@@ -113,8 +128,15 @@ const styles = StyleSheet.create({
     button: {
         marginTop: 8,
         paddingVertical: 6,
+        backgroundColor: '#FDD835',
     },
     buttonLabel: {
         fontSize: 16,
+        color: '#000',
+    },
+    logo: {
+        width: 100,
+        height: 100,
+        marginBottom: 16,
     },
 });
